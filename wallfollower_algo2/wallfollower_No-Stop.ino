@@ -25,6 +25,8 @@ const int echoRight = A4;
 //sensor 3 pins : front sensor
 const int trigMiddle = A3;
 const int echoMiddle = A2;
+
+const int powerSwitch = 10;
  
 int kiri, kanan, tengah, jkr, jkn, jdp;
  
@@ -120,61 +122,74 @@ void setup() {
   pinMode(echoRight,INPUT); // sensor
   pinMode(trigMiddle,OUTPUT); // sensor
   pinMode(echoMiddle,INPUT); // sensor
+
+  pinMode(powerSwitch, INPUT_PULLUP); // Assuming the switch connects the pin to GND when pressed
 }
  
 void loop() {
- 
-  digitalWrite(trigLeft, LOW);
-  delayMicroseconds(2);
-  digitalWrite(trigLeft, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigLeft, LOW);
-  kiri = pulseIn(echoLeft, HIGH);
-  jkr = kiri*0.0343/2;
- 
-  digitalWrite(trigRight, LOW);
-  delayMicroseconds(2);
-  digitalWrite(trigRight, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigRight, LOW);
-  kanan = pulseIn(echoRight, HIGH);
-  jkn = kanan*0.0343/2;
- 
-  digitalWrite(trigMiddle, LOW);
-  delayMicroseconds(2);
-  digitalWrite(trigMiddle, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigMiddle, LOW);
-  tengah = pulseIn(echoMiddle, HIGH);
-  jdp = tengah*0.0343/2;
- 
-  Serial.print("kiri : ");
-  Serial.println(jkr);
-  Serial.print("kanan : ");
-  Serial.println(jkn);
-  Serial.print("tengah : ");
-  Serial.println(jdp); 
- 
-  if (jdp <= 10) {
-    mundur();
-    if(jkn<jkr){
-      belokkiri();
-    } else if (jkr<jkn){
-      belokkanan();
-    } else if (jdp <= 10 && jkn <= 5 && jkr <= 5){
-      stop();
-      delay(1000);
+  int switchState = digitalRead(powerSwitch);
+
+  if (switchState == LOW) {
+    digitalWrite(trigLeft, LOW);
+    delayMicroseconds(2);
+    digitalWrite(trigLeft, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(trigLeft, LOW);
+    kiri = pulseIn(echoLeft, HIGH);
+    jkr = kiri*0.0343/2;
+
+    digitalWrite(trigRight, LOW);
+    delayMicroseconds(2);
+    digitalWrite(trigRight, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(trigRight, LOW);
+    kanan = pulseIn(echoRight, HIGH);
+    jkn = kanan*0.0343/2;
+
+    digitalWrite(trigMiddle, LOW);
+    delayMicroseconds(2);
+    digitalWrite(trigMiddle, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(trigMiddle, LOW);
+    tengah = pulseIn(echoMiddle, HIGH);
+    jdp = tengah*0.0343/2;
+
+    Serial.print("kiri : ");
+    Serial.println(jkr);
+    Serial.print("kanan : ");
+    Serial.println(jkn);
+    Serial.print("tengah : ");
+    Serial.println(jdp); 
+  
+    
+    if (jdp <= 10) {
+      mundur();
+      if(jkn<jkr){
+        belokkiri();
+      } else if (jkr<jkn){
+        belokkanan();
+      } else if (jdp <= 10 && jkn <= 5 && jkr <= 5){
+        stop();
+        delay(1000);
+        belokkanan();
+      }
+    }
+  
+    else if (jkr <= 5){
       belokkanan();
     }
-  }
- 
-  else if (jkr <= 5){
-    belokkanan();
-  }
-  else if (jkn <= 5){
-    belokkiri();
-  }
-  else {
-    maju();
+    else if (jkn <= 5){
+      belokkiri();
+    }
+    else {
+      maju();
+    }
+  } else {
+    digitalWrite(in1L, LOW);
+    digitalWrite(in2L, HIGH);
+    digitalWrite(in1R, HIGH);
+    digitalWrite(in2R, LOW);
+    analogWrite(enL,0);
+    analogWrite(enR, 0);
   }
 }
